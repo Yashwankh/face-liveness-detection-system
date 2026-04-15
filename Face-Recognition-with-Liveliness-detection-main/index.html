@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadhaar Face Verification System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Aadhaar_Logo.svg/1200px-Aadhaar_Logo.svg.png" 
+                     alt="Aadhaar Logo" class="aadhaar-logo">
+                <div class="logo-text">
+                    <h1>AADHAAR</h1>
+                    <p>Face Verification System</p>
+                </div>
+            </div>
+            <button class="add-btn" onclick="showAddStudent()">
+                <i class="fas fa-plus"></i> ADD
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="card main-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-star"></i> Aadhaar Face Verification</h2>
+                    <p>Enter your 12-digit Aadhaar Number to proceed</p>
+                </div>
+                
+                <div class="input-section">
+                    <div class="input-container">
+                        <i class="fas fa-id-card input-icon"></i>
+                        <input type="text" id="aadhaarInput" placeholder="Enter Aadhaar Card Number" maxlength="14">
+                    </div>
+                </div>
+
+                <div class="button-section">
+                    <button class="btn btn-primary" onclick="verifyAadhaar()">
+                        <i class="fas fa-check"></i> VERIFY AADHAAR
+                    </button>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h4>Secure</h4>
+                        <p>Advanced encryption</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-bolt"></i>
+                        <h4>Fast</h4>
+                        <p>Quick verification</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-bullseye"></i>
+                        <h4>Accurate</h4>
+                        <p>99% precision</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-lock"></i>
+                        <h4>Private</h4>
+                        <p>Data protected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Student Page -->
+        <div id="addStudentPage" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-plus"></i> Register New Aadhaar</h2>
+                    <p>Enter the Aadhaar number and position your face in the camera view</p>
+                </div>
+
+                <div class="input-section">
+                    <label for="newAadhaarInput">Aadhaar Number:</label>
+                    <div class="input-container">
+                        <i class="fas fa-id-card input-icon"></i>
+                        <input type="text" id="newAadhaarInput" placeholder="Enter Aadhaar Card Number" maxlength="14">
+                    </div>
+                </div>
+
+                <div class="camera-section">
+                    <div class="video-container">
+                        <video id="addVideo" autoplay muted></video>
+                        <div class="camera-overlay">
+                            <div class="face-guide"></div>
+                        </div>
+                    </div>
+                    <div class="camera-status" id="addStatus">Click START CAMERA to begin</div>
+                </div>
+
+                <div class="button-section">
+                    <button class="btn btn-success" onclick="startAddCamera()">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button class="btn btn-primary" onclick="capturePhoto()" disabled>
+                        <i class="fas fa-camera-retro"></i> Capture Photo
+                    </button>
+                    <button class="btn btn-secondary" onclick="showHome()">
+                        <i class="fas fa-arrow-left"></i> Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Page -->
+        <div id="verificationPage" class="page">
+            <div class="verification-header">
+                <h2>Aadhaar Live Verification</h2>
+                <p id="verifyingAadhaar">Verifying Aadhaar: <span id="currentAadhaar"></span></p>
+            </div>
+
+            <div class="verification-content">
+                <div class="verification-left">
+                    <div class="instruction-banner" id="instructionBanner">
+                        Initializing Camera...
+                    </div>
+                    
+                    <div class="video-container verification-video">
+                        <video id="verifyVideo" autoplay muted></video>
+                        <div class="verification-overlay">
+                            <div class="face-detection-box" id="faceBox"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="verification-right">
+                    <h3>Verification Status</h3>
+                    
+                    <div class="status-list">
+                        <div class="status-item" id="blinkStatus">
+                            <span>Blink Detection:</span>
+                            <span class="status-badge pending">❌ PENDING</span>
+                        </div>
+                        <div class="status-item" id="leftStatus">
+                            <span>Turn Head Left:</span>
+                            <span class="status-badge pending">❌ PENDING</span>
+                        </div>
+                        <div class="status-item" id="rightStatus">
+                            <span>Turn Head Right:</span>
+                            <span class="status-badge pending">❌ PENDING</span>
+                        </div>
+                        <div class="status-item" id="mouthStatus">
+                            <span>Mouth Opening:</span>
+                            <span class="status-badge pending">❌ PENDING</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="status-item" id="gestureCount">
+                            <span>Liveness Gestures (3 of 4 Required):</span>
+                            <span class="status-badge">0 / 4</span>
+                        </div>
+                        <div class="status-item" id="faceMatch">
+                            <span>Face Match Count:</span>
+                            <span class="status-badge">0 / 5</span>
+                        </div>
+                        <div class="status-item" id="timer">
+                            <span>Time Remaining:</span>
+                            <span class="status-badge">60.0s</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary full-width" onclick="cancelVerification()">
+                        <i class="fas fa-times"></i> Cancel Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Page -->
+        <div id="successPage" class="page">
+            <div class="card success-card">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Verification Successful!</h2>
+                <p class="success-aadhaar">Aadhaar Number: <span id="successAadhaarNumber"></span></p>
+                
+                <div class="success-details">
+                    <div class="success-check">
+                        <i class="fas fa-check"></i> Liveness: Blink detection passed
+                    </div>
+                    <div class="success-check">
+                        <i class="fas fa-check"></i> Liveness: Head movement verified
+                    </div>
+                    <div class="success-check">
+                        <i class="fas fa-check"></i> Liveness: Mouth movement detected
+                    </div>
+                    <div class="success-check">
+                        <i class="fas fa-check"></i> Biometric: Face identity confirmed
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="showHome()">
+                    <i class="fas fa-home"></i> Done
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><i class="fas fa-chart-bar"></i> <span id="registeredCount">0</span> Aadhaar Registered | 
+           <i class="fas fa-shield-alt"></i> Secure System | 
+           <i class="fas fa-flag"></i> Government of India</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

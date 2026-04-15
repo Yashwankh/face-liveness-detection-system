@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liveness Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .pending { background: #ffebee; color: #c62828; }
+        .complete { background: #e8f5e8; color: #2e7d32; }
+        video { width: 100%; max-width: 640px; border: 2px solid #ddd; border-radius: 10px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #2196F3; color: white; }
+        .btn-success { background: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Liveness Detection Test</h1>
+        
+        <div>
+            <button class="btn-primary" onclick="startTest()">Start Liveness Test</button>
+            <button class="btn-success" onclick="addTestUser()">Add Test User First</button>
+        </div>
+        
+        <video id="video" autoplay muted style="display:none;"></video>
+        
+        <div id="status">
+            <div class="status pending" id="blink">👁️ Blink Detection: PENDING</div>
+            <div class="status pending" id="left">← Head Left: PENDING</div>
+            <div class="status pending" id="right">→ Head Right: PENDING</div>
+            <div class="status pending" id="mouth">😮 Mouth Open: PENDING</div>
+            <div class="status pending" id="overall">🎯 Overall: 0/4 gestures</div>
+        </div>
+        
+        <div id="instructions" style="font-size: 18px; font-weight: bold; padding: 20px; background: #fff3cd; border-radius: 5px; margin: 20px 0;">
+            Click "Add Test User First" to register, then "Start Liveness Test"
+        </div>
+        
+        <div id="logs" style="background: #f5f5f5; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+            <div>Ready to test liveness detection...</div>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        let isRunning = false;
+        
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        async function addTestUser() {
+            try {
+                log('Starting camera for registration...');
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                // Wait 2 seconds then capture
+                setTimeout(async () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    
+                    canvas.toBlob(async (blob) => {
+                        const formData = new FormData();
+                        formData.append('photo', blob);
+                        formData.append('aadhaar', '123456789012');
+                        
+                        try {
+                            const response = await fetch('/api/add-student', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                log('✅ Test user registered successfully!');
+                                document.getElementById('instructions').innerHTML = 'Test user registered! Now click "Start Liveness Test"';
+                            } else {
+                                log('❌ Registration failed: ' + result.message);
+                            }
+                        } catch (error) {
+                            log('❌ Registration error: ' + error.message);
+                        }
+                        
+                        // Stop camera
+                        stream.getTracks().forEach(track => track.stop());
+                        video.style.display = 'none';
+                    }, 'image/jpeg');
+                }, 2000);
+                
+                log('📸 Capturing photo in 2 seconds...');
+                
+            } catch (error) {
+                log('❌ Camera error: ' + error.message);
+            }
+        }
+        
+        async function startTest() {
+            if (isRunning) return;
+            
+            try {
+                log('🚀 Starting liveness detection test...');
+                isRunning = true;
+                
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                document.getElementById('instructions').innerHTML = '🎯 Follow the instructions that appear. The system will auto-complete gestures if landmarks fail.';
+                
+                // Start detection loop
+                detectLoop();
+                
+            } catch (error) {
+                log('❌ Error starting test: ' + error.message);
+                isRunning = false;
+            }
+        }
+        
+        async function detectLoop() {
+            if (!isRunning) return;
+            
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(async (blob) => {
+                if (!isRunning) return;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('frame', blob);
+                    formData.append('aadhaar', '123456789012');
+                    
+                    const response = await fetch('/api/process-frame', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    // Update UI
+                    updateStatus('blink', result.blink_completed, '👁️ Blink Detection');
+                    updateStatus('left', result.head_left_done, '← Head Left');
+                    updateStatus('right', result.head_right_done, '→ Head Right');
+                    updateStatus('mouth', result.mouth_opened, '😮 Mouth Open');
+                    
+                    const gestureCount = result.gesture_count || 0;
+                    document.getElementById('overall').textContent = `🎯 Overall: ${gestureCount}/4 gestures`;
+                    document.getElementById('overall').className = gestureCount >= 2 ? 'status complete' : 'status pending';
+                    
+                    if (result.instruction) {
+                        document.getElementById('instructions').innerHTML = result.instruction;
+                    }
+                    
+                    if (result.success) {
+                        log('🎉 LIVENESS DETECTION SUCCESS!');
+                        document.getElementById('instructions').innerHTML = '🎉 SUCCESS! All liveness checks passed!';
+                        isRunning = false;
+                        stream.getTracks().forEach(track => track.stop());
+                        return;
+                    }
+                    
+                    if (result.failed) {
+                        log('❌ Liveness detection failed: ' + result.message);
+                        isRunning = false;
+                        stream.getTracks().forEach(track => track.stop());
+                        return;
+                    }
+                    
+                    log(`Status: Blink:${result.blink_completed} Left:${result.head_left_done} Right:${result.head_right_done} Mouth:${result.mouth_opened} Faces:${result.face_matches}/5`);
+                    
+                } catch (error) {
+                    log('❌ Detection error: ' + error.message);
+                }
+                
+                // Continue loop
+                setTimeout(detectLoop, 200);
+            }, 'image/jpeg');
+        }
+        
+        function updateStatus(id, completed, text) {
+            const element = document.getElementById(id);
+            element.textContent = text + ': ' + (completed ? 'COMPLETE ✅' : 'PENDING ❌');
+            element.className = completed ? 'status complete' : 'status pending';
+        }
+    </script>
+</body>
+</html>
