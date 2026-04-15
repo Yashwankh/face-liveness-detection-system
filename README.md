@@ -47,19 +47,21 @@ python app.py
 | Backend | **Flask+SQLite** | Scalable deployment |
 
 ## 📊 Performance Metrics
-True Positive Rate (TPR): 97.8%
-False Positive Rate (FPR): 1 × 10⁻⁵
-Half Total Error Rate (HTER): 1.2%
 
-Attack Success Rates:
-┌──────────────────┬──────────┐
-│ Print Attack │ 99.2% │
-├──────────────────┼──────────┤
-│ Replay Attack │ 98.8% │
-├──────────────────┼──────────┤
-│ Screen Replay │ 97.1% │
-└──────────────────┴──────────┘
+| Metric | Value |
+|---|---:|
+| True Positive Rate (TPR) | 97.8% |
+| False Positive Rate (FPR) | 1 × 10⁻⁵ |
+| Half Total Error Rate (HTER) | 1.2% |
 
+**Attack Detection Rates**
+- Print Attack: 99.2%
+- Replay Attack: 98.8%
+- Screen Replay: 97.1%
+- 3D Mask Attack: 96.4%
+
+**Datasets Used**
+CASIA-FASD, Replay-Attack, OULU-NPU, CASIA-SURF, CelebA-Spoof
 
 
 **Datasets**: CASIA-FASD, Replay-Attack, OULU-NPU, CelebA-Spoof
